@@ -1,0 +1,3 @@
+pyYAML
+colorama
+requests
