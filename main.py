@@ -50,7 +50,7 @@ async def getChannelInfo(channel_id):
 async def checkDoublePosting(channel_id, number):
     response = requests.get(f'https://discord.com/api/v9/channels/{channel_id}/messages?limit={number}', headers=headers).json()
     for i in range(number):
-        if 'author' in response[i] and response[i]['author']['id'] == user_id:
+        if response and response[i] and 'author' in response[i] and response[i]['author']['id'] == user_id:
             return False
     return True
 
