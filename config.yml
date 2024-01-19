@@ -30,6 +30,6 @@ default:
 
   wait_before_start: 0 # How many minutes to wait before starting the script (Default: 0)
   debug_mode: true # If set to true, you will get a log in the console every time a message is sent (Default: false)
-  channels: # Channels where to send the message FUNGUJE
+  channels: # Channels where to send the message
     - 'xxxxxxxxxxxxxxxxxxx'
     - 'xxxxxxxxxxxxxxxxxxx' # etc
