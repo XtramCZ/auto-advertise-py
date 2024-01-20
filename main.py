@@ -54,6 +54,11 @@ async def checkDoublePosting(channel_id, number):
             return False
     return True
 
+async def changeStatus():
+    if config['debug_mode']:
+        print(f' > Changing status to {config["status"]}')
+    requests.patch('https://discord.com/api/v9/users/@me/settings', headers=headers, json={'status': config["status"]})
+
 async def sendToChannel(channel_id, message, channel_name, guild_name):
     if config['avoid_spam']['enabled']:
         amount = random.randint(config['avoid_spam']['minimum_messages'], config['avoid_spam']['maximum_messages'])
@@ -92,6 +97,7 @@ print(colorama.Fore.RED + '''
 ''' + colorama.Fore.RESET + '    by XtramCZ')
 
 async def sendMessages():
+    await changeStatus()
     global last_message
     last_message = ""
     if config['multiple_messages']['enabled']:
