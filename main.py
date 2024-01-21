@@ -1,10 +1,13 @@
 import colorama
 import asyncio
 import yaml
+import json
 import requests
 import os
 import random
 import time
+from websockets.sync.client import connect
+import threading
 from datetime import datetime
 
 colorama.init()
@@ -55,9 +58,22 @@ async def checkDoublePosting(channel_id, number):
     return True
 
 async def changeStatus():
-    if config['debug_mode']:
-        print(f' > Changing status to {config["status"]}')
-    requests.patch('https://discord.com/api/v9/users/@me/settings', headers=headers, json={'status': config["status"]})
+    print(f' > Changing status to {config["status"]}...')
+    global ws
+    while True:
+        try:
+            ws = connect('wss://gateway.discord.gg/?v=9&encoding=json')
+            start = json.loads(ws.recv())
+            heartbeat = start['d']['heartbeat_interval']
+            auth = {"op": 2,"d": {"token": config["token"],"properties": {"$os": "Windows 10","$browser": "Google Chrome","$device": "Windows"},"presence": {"status": config["status"],"afk": False}},"s": None,"t": None}
+            ws.send(json.dumps(auth))
+            online = {"op":1,"d":"None"}
+            time.sleep(heartbeat / 1000)
+            ws.send(json.dumps(online))
+        except:
+            print(f"{colorama.Fore.RED} > Failed to connect to gateway. Retrying in 10 seconds...{colorama.Fore.RESET}")
+            time.sleep(10)
+
 
 async def sendToChannel(channel_id, message, channel_name, guild_name):
     if config['avoid_spam']['enabled']:
@@ -97,7 +113,7 @@ print(colorama.Fore.RED + '''
 ''' + colorama.Fore.RESET + '    by XtramCZ')
 
 async def sendMessages():
-    await changeStatus()
+    threading.Thread(target=asyncio.run, args=(changeStatus(),)).start()
     global last_message
     last_message = ""
     if config['multiple_messages']['enabled']:
