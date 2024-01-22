@@ -71,7 +71,6 @@ async def changeStatus():
             time.sleep(heartbeat / 1000)
             ws.send(json.dumps(online))
         except:
-            print(f"{colorama.Fore.RED} > Failed to connect to gateway. Retrying in 10 seconds...{colorama.Fore.RESET}")
             time.sleep(10)
 
 
