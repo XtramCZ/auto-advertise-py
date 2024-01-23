@@ -58,14 +58,14 @@ async def checkDoublePosting(channel_id, number):
     return True
 
 async def changeStatus():
-    print(f' > Changing status to {config["status"]}...')
+    print(f' > Changing status to {config["change_status"]["status"]}...')
     global ws
     while True:
         try:
             ws = connect('wss://gateway.discord.gg/?v=9&encoding=json')
             start = json.loads(ws.recv())
             heartbeat = start['d']['heartbeat_interval']
-            auth = {"op": 2,"d": {"token": config["token"],"properties": {"$os": "Windows 10","$browser": "Google Chrome","$device": "Windows"},"presence": {"status": config["status"],"afk": False}},"s": None,"t": None}
+            auth = {"op": 2,"d": {"token": config["token"],"properties": {"$os": "Windows 10","$browser": "Google Chrome","$device": "Windows"},"presence": {"status": config["change_status"]["status"],"afk": False}},"s": None,"t": None}
             ws.send(json.dumps(auth))
             online = {"op":1,"d":"None"}
             time.sleep(heartbeat / 1000)
@@ -112,7 +112,6 @@ print(colorama.Fore.RED + '''
 ''' + colorama.Fore.RESET + '    by XtramCZ')
 
 async def sendMessages():
-    threading.Thread(target=asyncio.run, args=(changeStatus(),)).start()
     global last_message
     last_message = ""
     if config['multiple_messages']['enabled']:
@@ -158,10 +157,9 @@ async def start():
     global user_id
     try:
         user = requests.get('https://discord.com/api/v9/users/@me', headers=headers).json()
-        
         print()
-        print(colorama.Fore.GREEN + ' > Token is valid!' + colorama.Fore.RESET)
         user_id = user['id']
+        print(colorama.Fore.GREEN + ' > Token is valid!' + colorama.Fore.RESET)
     except:
         print()
         print(colorama.Fore.RED + ' > Token is invalid!')
@@ -172,6 +170,8 @@ async def start():
         print()
         time.sleep(config['wait_before_start'] * 60) # change 60 to 1 for testing
 
+    if config['change_status']['enabled']:
+        threading.Thread(target=asyncio.run, args=(changeStatus(),)).start()
     await sendMessages()
 
 try:    
