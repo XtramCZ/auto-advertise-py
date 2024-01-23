@@ -158,15 +158,15 @@ async def start():
     global user_id
     try:
         user = requests.get('https://discord.com/api/v9/users/@me', headers=headers).json()
+        
+        print()
+        print(colorama.Fore.GREEN + ' > Token is valid!' + colorama.Fore.RESET)
+        user_id = user['id']
     except:
         print()
         print(colorama.Fore.RED + ' > Token is invalid!')
         exit()
-
-    print()
-    print(colorama.Fore.GREEN + ' > Token is valid!' + colorama.Fore.RESET)
-    user_id = user['id']
-
+        
     if config['wait_before_start'] > 0:
         print(f' > Waiting {config["wait_before_start"]} minutes before starting...')
         print()
