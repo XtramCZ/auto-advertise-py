@@ -160,9 +160,11 @@ async def start():
         print()
         user_id = user['id']
         print(colorama.Fore.GREEN + ' > Token is valid!' + colorama.Fore.RESET)
-    except:
+    except Exception as e:
         print()
         print(colorama.Fore.RED + ' > Token is invalid!')
+        print()
+        print(e.text)
         exit()
         
     if config['wait_before_start'] > 0:
