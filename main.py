@@ -155,16 +155,17 @@ async def sendMessages():
 
 async def start():
     global user_id
+    response = ""
     try:
-        user = requests.get('https://discord.com/api/v9/users/@me', headers=headers).json()
+        user = requests.get('https://discord.com/api/v9/users/@me', headers=headers)
+        response = user.text
         print()
-        user_id = user['id']
+        user_id = user.json()['id']
         print(colorama.Fore.GREEN + ' > Token is valid!' + colorama.Fore.RESET)
-    except Exception as e:
+    except:
         print()
-        print(colorama.Fore.RED + ' > Token is invalid!')
-        print()
-        print(e.text)
+        print(colorama.Fore.RED + ' > Token is invalid!', colorama.Fore.RESET)
+        print(response)
         exit()
         
     if config['wait_before_start'] > 0:
