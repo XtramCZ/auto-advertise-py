@@ -75,30 +75,33 @@ async def changeStatus():
 
 
 async def sendToChannel(channel_id, message, channel_name, guild_name):
-    if config['avoid_spam']['enabled']:
-        amount = random.randint(config['avoid_spam']['minimum_messages'], config['avoid_spam']['maximum_messages'])
-        can_post = await checkDoublePosting(channel_id, amount)
-        if not can_post:
-            if config['debug_mode']:
-                print(f' > Skipping "{channel_name}" in "{guild_name}" because you have "avoid_spam" enabled ({amount} messages)')
-            return
-
-    if isinstance(message, list):
-        for msg_file in message:
-            msg_content = open(os.path.join('messages', msg_file), "r", encoding="utf-8").read()
-            requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages', json={'content': msg_content}, headers=headers)
-    else:
-        response = requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages', json={'content': message}, headers=headers).json()
-
-        if 'code' in response:
-            if response['code'] == 50013: # Muted
-                print(f'{colorama.Fore.RED} > There was a problem sending a message to "{channel_name}" in "{guild_name}" (MUTED)')
+    try:
+        if config['avoid_spam']['enabled']:
+            amount = random.randint(config['avoid_spam']['minimum_messages'], config['avoid_spam']['maximum_messages'])
+            can_post = await checkDoublePosting(channel_id, amount)
+            if not can_post:
+                if config['debug_mode']:
+                    print(f' > Skipping "{channel_name}" in "{guild_name}" because you have "avoid_spam" enabled ({amount} messages)')
                 return
-            elif response['code'] == 20016: # Slowmode
-                return
-            
-    if config['debug_mode']:
-        print(f' > A message was sent to "{channel_name}" in "{guild_name}"')
+
+        if isinstance(message, list):
+            for msg_file in message:
+                msg_content = open(os.path.join('messages', msg_file), "r", encoding="utf-8").read()
+                requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages', json={'content': msg_content}, headers=headers)
+        else:
+            response = requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages', json={'content': message}, headers=headers).json()
+
+            if 'code' in response:
+                if response['code'] == 50013: # Muted
+                    print(f'{colorama.Fore.RED} > There was a problem sending a message to "{channel_name}" in "{guild_name}" (MUTED)')
+                    return
+                elif response['code'] == 20016: # Slowmode
+                    return
+
+        if config['debug_mode']:
+            print(f' > A message was sent to "{channel_name}" in "{guild_name}"')
+    except Exception as e:
+        print(f"{colorama.Fore.RED} > An error occurred while sending message to '{channel_name}' in '{guild_name}': {e}")
 
 print('\x1b[2J')  # Clear the console
 
@@ -143,41 +146,4 @@ async def sendMessages():
             wait_time = random.randint(config['wait_between_messages']['minimum_interval'], config['wait_between_messages']['maximum_interval'])
             time.sleep(wait_time)
 
-    delay = config['interval']
-
-    if config['randomize_interval']['enabled']:
-        if not config['randomize_interval']['minimum_interval'] > config['randomize_interval']['maximum_interval']:
-            delay = random.randint(config['randomize_interval']['minimum_interval'], config['randomize_interval']['maximum_interval'])
-            if config['debug_mode']:
-                print(f' > Waiting {delay} minutes...')
-    time.sleep(delay * 60) # change 60 to 1 for testing
-    await sendMessages()
-
-async def start():
-    global user_id
-    response = ""
-    try:
-        user = requests.get('https://discord.com/api/v9/users/@me', headers=headers)
-        response = user.text
-        print()
-        user_id = user.json()['id']
-        print(colorama.Fore.GREEN + ' > Token is valid!' + colorama.Fore.RESET)
-    except:
-        print()
-        print(colorama.Fore.RED + ' > Token is invalid!', colorama.Fore.RESET)
-        print(response)
-        exit()
-        
-    if config['wait_before_start'] > 0:
-        print(f' > Waiting {config["wait_before_start"]} minutes before starting...')
-        print()
-        time.sleep(config['wait_before_start'] * 60) # change 60 to 1 for testing
-
-    if config['change_status']['enabled']:
-        threading.Thread(target=asyncio.run, args=(changeStatus(),)).start()
-    await sendMessages()
-
-try:    
-    asyncio.run(start())
-except KeyboardInterrupt:
-    exit()
+    delay = config
