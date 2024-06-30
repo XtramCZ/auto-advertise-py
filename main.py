@@ -140,7 +140,7 @@ async def sendMessages():
             channel_name, guild_name = await getChannelInfo(channel_id)
             await sendToChannel(channel_id, message, channel_name, guild_name)
         except:
-            print(f'{colorama.Fore.RED} > There was a problem sending a message to "{channel_name}" in "{guild_name}"')
+            print(f'{colorama.Fore.RED} > There was a problem sending a message to "{channel_id}" in "{guild_name}"')
             
         if config['wait_between_messages']['enabled']:
             wait_time = random.randint(config['wait_between_messages']['minimum_interval'], config['wait_between_messages']['maximum_interval'])
