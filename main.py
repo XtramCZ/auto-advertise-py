@@ -122,14 +122,14 @@ async def sendMessages():
                 message_folder.remove(last_message)
 
             message_file = random.choice(message_folder)
-            message = open(os.path.join('messages', message_file), "r").read()
+            message = open(os.path.join('messages', message_file), "r", encoding="utf-8").read()
             last_message = message_file
 
         elif config['multiple_messages']['mode'] == 1:
             message = sorted(message_folder)
 
     else:
-        message = open("message.txt", "r").read()
+        message = open("message.txt", "r", encoding="utf-8").read()
 
     if config['work_hours']['enabled']:
         getWorkHours()
