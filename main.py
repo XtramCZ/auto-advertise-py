@@ -42,8 +42,15 @@ async def checkWorkTime():
             break
 
 async def getChannelInfo(channel_id):
-    channel = requests.get(f'https://discord.com/api/v9/channels/{channel_id}', headers=headers).json()
-    guild = requests.get(f'https://discord.com/api/v9/guilds/{channel["guild_id"]}', headers=headers).json()
+    channel_resp = requests.get(f'https://discord.com/api/v9/channels/{channel_id}', headers=headers)
+    if channel_resp.status_code != 200:
+        if config.get('debug_mode'):
+            print(f'{colorama.Fore.YELLOW} > Skipping invalid channel: {channel_id}')
+        return None, None
+
+    channel = channel_resp.json()
+    guild_resp = requests.get(f'https://discord.com/api/v9/guilds/{channel["guild_id"]}', headers=headers)
+    guild = guild_resp.json() if guild_resp.status_code == 200 else {}
 
     channel_name = channel['name'] if 'name' in channel else channel_id
     guild_name = guild['name'] if 'name' in guild else 'Unknown guild'
@@ -84,9 +91,16 @@ async def sendToChannel(channel_id, message, channel_name, guild_name):
             return
 
     if isinstance(message, list):
-        for msg_file in message:
+        for i, msg_file in enumerate(message):
             msg_content = open(os.path.join('messages', msg_file), "r", encoding="utf-8").read()
             requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages', json={'content': msg_content}, headers=headers)
+            # Wait between messages to respect slowmode
+            if i < len(message) - 1 and config.get('slowmode', {}).get('enabled', False):
+                wait = random.randint(
+                    config['slowmode'].get('minimum_delay', 5),
+                    config['slowmode'].get('maximum_delay', 7)
+                )
+                time.sleep(wait)
     else:
         response = requests.post(f'https://discord.com/api/v9/channels/{channel_id}/messages', json={'content': message}, headers=headers).json()
 
@@ -138,9 +152,11 @@ async def sendMessages():
     for channel_id in config['channels']:
         try:
             channel_name, guild_name = await getChannelInfo(channel_id)
+            if channel_name is None:
+                continue
             await sendToChannel(channel_id, message, channel_name, guild_name)
-        except:
-            print(f'{colorama.Fore.RED} > There was a problem sending a message to "{channel_id}" in "{guild_name}"')
+        except Exception as e:
+            print(f'{colorama.Fore.RED} > There was a problem sending a message to "{channel_id}" ({e})')
             
         if config['wait_between_messages']['enabled']:
             wait_time = random.randint(config['wait_between_messages']['minimum_interval'], config['wait_between_messages']['maximum_interval'])
