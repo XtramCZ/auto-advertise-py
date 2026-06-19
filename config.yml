@@ -10,8 +10,9 @@ default:
 
   wait_between_messages:
     enabled: false # If set to true, the script waits between channels. Set this to true if you're getting rate limited (Default: false)
-    minimum_interval: 3 # Maximum interval in seconds (Default: 3)
+    minimum_interval: 3 # Minimum interval in seconds (Default: 3)
     maximum_interval: 5 # Maximum interval in seconds (Default: 5)
+    slowmode_aware: false # If true, respects Discord slowmode by using channel rate_limit as minimum delay (Default: false)
 
   avoid_spam:
     enabled: false # If set to true, the script prevents double-posting (Default: false)
